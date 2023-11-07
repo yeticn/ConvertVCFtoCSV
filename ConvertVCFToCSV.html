@@ -25,6 +25,19 @@
     </div>
 
     <script>
+        function mettreEnMajusculePremiereLettre(mot) {
+        // Vérifie si la chaîne est vide ou nulle
+        if (!mot) {
+            return "";
+        }
+
+        // Met la première lettre en majuscule et le reste en minuscules
+        const premiereLettre = mot[0].toUpperCase();
+        const resteDuMot = mot.slice(1).toLowerCase();
+
+        // Concatène la première lettre et le reste du mot
+        return premiereLettre + resteDuMot;
+        }
         function convertVCFtoCSV() {
             const fileInput = document.getElementById("vcfFileInput");
             const progressBar = document.getElementById("progressBar");
@@ -43,14 +56,25 @@
                         const vcardArray = vcfData.split("END:VCARD\r\n");
 
                         for (const vcard of vcardArray) {
-                            const nomMatch = vcard.match(/FN:(.*?)\r\n/);
-                            const prenomMatch = vcard.match(/N:(.*?)\r\n/);
-                            const emailMatch = vcard.match(/EMAIL;type=INTERNET;type=WORK;type=pref:(.*?)\r\n/);
+                            const nomMatch = vcard.match(/N:(.*?);(.*?);.*\r\n/);
+                            const prenomMatch = vcard.match(/N:(.*?);(.*?);.*\r\n/);
+                            const emailMatch = vcard.match(/EMAIL;type=INTERNET;.*type=pref:(.*?)\r\n/);
                             const noteMatch = vcard.match(/NOTE:(.*?)\r\n/);
 
-                            const nom = nomMatch ? nomMatch[1] : '';
-                            const prenom = prenomMatch ? prenomMatch[1] : '';
-                            const email = emailMatch ? emailMatch[1] : '';
+                            let nom = nomMatch ? nomMatch[1] : '';
+                            nom = mettreEnMajusculePremiereLettre(nom);
+
+                            let prenom = prenomMatch ? prenomMatch[2] : '';
+                            prenom = mettreEnMajusculePremiereLettre(prenom);
+                            const emailConst = emailMatch ? emailMatch[1] : '';
+                            const regex = /<([^>]+)>/; // Recherche le texte entre les signes < et >
+                            const correspondance = emailConst.match(regex);
+
+                            let email = emailConst;
+                            if (correspondance) {
+                                email = correspondance[1];
+                            }                            
+                            
                             const note = noteMatch ? noteMatch[1] : '';
 
                             csvData += `"${nom}","${prenom}","${email}","${note}"\n`;
